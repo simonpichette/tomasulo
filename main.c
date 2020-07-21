@@ -1,0 +1,172 @@
+/****** main.c **************************************************************
+*   Description
+*       Entry point for Tomasulo's Out-of-order execution algorithm
+*       simulator.
+*
+*       Contains initialization, parameters, main simulation loop
+*       and display functions 
+*
+*   Author          : Simon Pichette
+*   Creation date   : Thu Jul 16 09:45:09 2020
+*****************************************************************************
+*   This program is free software: you can redistribute it and/or modify
+*   it under the terms of the GNU General Public License as published by
+*   the Free Software Foundation, either version 3 of the License, or
+*   (at your option) any later version.
+*
+*   This program is distributed in the hope that it will be useful,
+*   but WITHOUT ANY WARRANTY; without even the implied warranty of
+*   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*   GNU General Public License for more details.
+*
+*   You should have received a copy of the GNU General Public License
+*   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*****************************************************************************/
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include "instruction.h"
+#include "station.h"
+#include "tomasulo.h"
+
+
+void print_banner();
+void print_scoreboard(struct ilist* program);
+void print_stations(struct slist* stations);
+void print_registers();
+int load_program(const char* filename, struct ilist* prog);
+void print_state(struct state* s, char* reg_names[]);
+
+
+int main(void) {
+     // arrays of strings for register names and content
+    char* reg_names[] = {"F0", "F2", "F4", "F6", "F8", "F10", "F12", "F14"};    
+    char* reg_contents[] = {"", "", "", "", "", "", "", ""};
+    char input;
+
+    // program loading
+    struct ilist* program = create_inst_list(10);
+    if (!program) {
+        puts("list creation failed");
+    }
+    load_program("prog1.txt", program);
+
+    // create reservation stations
+    struct slist* stations = create_station_list(10);
+    add_station(stations, "Add1", addsub);
+    add_station(stations, "Add2", addsub);
+    add_station(stations, "Add3", addsub);
+    add_station(stations, "Mul1", muldiv);
+    add_station(stations, "Mul2", muldiv);
+    add_station(stations, "Load1", loadstore);
+    add_station(stations, "Load2", loadstore);
+
+    // init simulation state context
+    struct state context;
+    context.program = program;
+    context.stations = stations;
+    context.issue_width = 1;
+    context.regfile_size = 8;
+
+
+    // run simulation
+    for (context.cycle = 1; context.cycle < 100; context.cycle++) {
+        retire(&context, reg_contents);
+        issue(&context, reg_names, reg_contents);
+        execute(&context);
+        writeback(&context);
+
+        print_state(&context, reg_contents);
+        puts("(c)ontinue, (a)bort");
+        scanf(" %c", &input);
+        switch(input) {
+            case 'c' :
+                break;
+            case 'a':
+                return 0;
+        }
+        system("clear");    // UNIX
+        //system("cls");    // DOS
+    }
+}
+
+
+void print_state(struct state* s, char* reg_names[]) {
+    print_banner();
+    printf("Cycle : %d \n", s->cycle);
+    print_scoreboard(s->program);
+    print_stations(s->stations);
+    print_registers(reg_names, s->regfile_size);
+}
+
+
+int load_program(const char* filename, struct ilist* prog) {
+    char buffer[20];
+    char* line; 
+
+    FILE *source = fopen(filename, "rt");
+    if (!source) {
+        return -1;
+    }
+
+    while (fgets(buffer, sizeof(buffer), source)) {
+        line = strtok(buffer, "\n");        // remove trailing newline
+        int result = add_inst(prog, line);
+        if (!result) {
+            //inst_details(&prog->data[prog->occupied-1]);
+        } else {
+            printf ("Error!!, code %d\n", result);
+            return -1;
+        }
+    }
+    return 0;
+}
+
+
+void print_banner() {
+    puts("***********************************************************************");
+    puts("*  ELE749 Out-of-order execution demo using Tomasulo's algorithm      *");
+    puts("***********************************************************************");
+    puts("");
+}
+
+
+void print_scoreboard(struct ilist* program) {
+    puts("|---------------------------------------------------------------------|");
+    puts("| Instruction         | Issue     | Execute   | Writeback | Retired   |");
+    puts("|---------------------------------------------------------------------|");
+    for (size_t i = 0; i < program->occupied; i++) {
+        print_inst(&program->data[i]);
+    }
+    puts("|---------------------------------------------------------------------|");
+    puts("");
+}
+
+
+void print_stations(struct slist* stations) {
+    puts("|---------------------------------------------------------------------|");
+    puts("| Reservation stations                                                |");
+    puts("|---------------------------------------------------------------------|");
+    puts("| Name     |  Busy  |    Op   |   Vj    |    Vk   |    Qj   |    Qk   |");
+    puts("|---------------------------------------------------------------------|");
+    for (size_t i = 0; i < stations->occupied; i++) {
+        print_station(&stations->data[i]);
+    }
+    puts("|---------------------------------------------------------------------|");
+    puts("");
+}
+
+
+void print_registers(char* reg_names[], size_t num) {
+    puts("|-----------------------------------------------------------------------|");
+    puts("| Register wait queues (Qi)                                             |");
+    puts("|-----------------------------------------------------------------------|");
+    puts("|   F0   |   F2   |   F4   |   F6   |   F8   |  F10   |  F12   |  F14   |");
+    for (size_t i = 0; i < num; i++) {
+        printf("|%7s ", reg_names[i]);
+    }
+    puts("|");
+    puts("|-----------------------------------------------------------------------|");
+}

@@ -1,0 +1,6 @@
+ld F6, 34(R2)
+ld F2, 45(R3)
+muld F0, F2, F4
+subd F8, F6, F2
+divd F10, F0, F6
+addd F6, F8, F2
