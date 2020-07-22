@@ -45,7 +45,7 @@ int main(void) {
     char* reg_names[] = {"F0", "F2", "F4", "F6", "F8", "F10", "F12", "F14"};    
     char* reg_contents[] = {"", "", "", "", "", "", "", ""};
     char input;
-
+    modify_exec_cycles("exec_cycles.txt");
     // program loading
     struct ilist* program = create_inst_list(10);
     if (!program) {
