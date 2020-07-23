@@ -1,0 +1,4 @@
+| opclasses | mnemonics | delay |
+addsub addd 1
+loadstore ld 4
+muldiv muld 8

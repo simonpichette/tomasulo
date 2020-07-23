@@ -30,6 +30,7 @@
 #include "instruction.h"
 #include "station.h"
 #include "tomasulo.h"
+#include "parameter.h"
 
 
 void print_banner();
@@ -45,6 +46,9 @@ int main(void) {
     char* reg_names[] = {"F0", "F2", "F4", "F6", "F8", "F10", "F12", "F14"};    
     char* reg_contents[] = {"", "", "", "", "", "", "", ""};
     char input;
+
+    // load parameter
+    struct parameter** param_list = load_parameter("tomasulo_parameter.txt");
 
     // program loading
     struct ilist* program = create_inst_list(10);
@@ -87,8 +91,8 @@ int main(void) {
             case 'a':
                 return 0;
         }
-        system("clear");    // UNIX
-        //system("cls");    // DOS
+        //system("clear");    // UNIX
+        system("cls");    // DOS
     }
 }
 
