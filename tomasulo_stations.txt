@@ -1,0 +1,8 @@
+| station name | station type |
+Add1 addsub
+Add2 addsub
+Mul1 muldiv
+Mul2 muldiv
+Load1 loadstore
+Load2 loadstore
+

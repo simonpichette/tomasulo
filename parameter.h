@@ -7,13 +7,13 @@
 
 #include<stdlib.h>
 #include <stdio.h>
+#include "station.h"
 
 struct parameter{
-    char opclasses[20];
-    char mnemonics[20];
-    int exec_cycles;
+    char name[20];
+    char class[20];
 };
 
-struct parameter** load_parameter(const char* filename);
+int load_stations(const char* filename,struct slist* stations);
 
 #endif //PARAMETER_H

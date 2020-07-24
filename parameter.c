@@ -3,39 +3,34 @@
 //
 
 #include "parameter.h"
+#include "instruction.h"
+#include "string.h"
 
-struct parameter** load_parameter(const char* filename){
-    int nb_lines = 0;
-    char c;
+int load_stations(const char* filename,struct slist* stations){
+    int nb_stations = 0;
 
     FILE *param_file = fopen(filename, "r");
     if (!param_file) {
         return NULL;
     }
 
-    for (c = getc(param_file); c != EOF; c = getc(param_file)) {
-        if (c == '\n')
-            nb_lines++;
-    };
-    nb_lines -= 1;
-
-    struct parameter** param_list = malloc(nb_lines * sizeof(struct parameter*));
-    for(int i=0; i<nb_lines; i++){
-        param_list[i] = (struct parameter*)malloc(sizeof(struct parameter));
-        if (param_list[i] == NULL) {
-            return NULL;
-        }
-    }
-
-    int i = 0;
-    rewind(param_file);
     //Skip de file header
     fscanf(param_file, "%*[^\n]\n");
+    char station_name[20];
+    char station_type[20];
+    while(fscanf(param_file, "%s %s", station_name, station_type) != EOF) {
 
-    while(fscanf(param_file, "%s %s %d", param_list[i]->opclasses, param_list[i]->mnemonics,
-                 &param_list[i]->exec_cycles) != EOF) {
-        i++;
+        if(strcmp("addsub",station_type) == 0){
+            add_station(stations, station_name, addsub);
+        }
+        else if(strcmp("muldiv",station_type) == 0){
+            add_station(stations, station_name, muldiv);
+        }
+        else{
+            add_station(stations, station_name, loadstore);
+        }
+        nb_stations++;
     }
     fclose(param_file);
-    return param_list;
+    return nb_stations;
 }

@@ -47,9 +47,6 @@ int main(void) {
     char* reg_contents[] = {"", "", "", "", "", "", "", ""};
     char input;
 
-    // load parameter
-    struct parameter** param_list = load_parameter("tomasulo_parameter.txt");
-
     // program loading
     struct ilist* program = create_inst_list(10);
     if (!program) {
@@ -59,13 +56,9 @@ int main(void) {
 
     // create reservation stations
     struct slist* stations = create_station_list(10);
-    add_station(stations, "Add1", addsub);
-    add_station(stations, "Add2", addsub);
-    add_station(stations, "Add3", addsub);
-    add_station(stations, "Mul1", muldiv);
-    add_station(stations, "Mul2", muldiv);
-    add_station(stations, "Load1", loadstore);
-    add_station(stations, "Load2", loadstore);
+
+    // load parameter
+    load_stations("tomasulo_stations.txt",stations);
 
     // init simulation state context
     struct state context;
@@ -73,7 +66,6 @@ int main(void) {
     context.stations = stations;
     context.issue_width = 1;
     context.regfile_size = 8;
-
 
     // run simulation
     for (context.cycle = 1; context.cycle < 100; context.cycle++) {
