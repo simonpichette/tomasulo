@@ -112,4 +112,12 @@ void print_inst(struct instruction* inst);
 *****************************************************************************/
 void inst_details(struct instruction* inst);
 
+/****** modify_exec_cycles **************************************************
+* Modify the number of cycles by instructions
+*
+* @param filename name of the file with cycles for instructions
+* @return -1 if file not loaded else 0
+*****************************************************************************/
+int modify_exec_cycles(const char* filename);
+
 #endif

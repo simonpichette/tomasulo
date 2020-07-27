@@ -38,8 +38,25 @@ const char* mnemonics[] = {"ld", "sw", "addd", "subd", "muld", "divd"};
 
 // array of ints for execution time
 // also ordered the same as enum opcode
-const int exec_cycles[] = { 1,    1,    2    ,  2    ,  4     ,  8};
+int exec_cycles[100] = {};
 
+int modify_exec_cycles(const char* filename){
+        char buffer[20];
+        char* line;
+
+        FILE *source = fopen(filename, "rt");
+        if (!source) {
+            return -1;
+        }
+
+        int exec_index = 0;
+        while (fgets(buffer, sizeof(buffer), source)) {
+            line =  strtok(buffer, "\n");        // remove trailing newline
+            exec_cycles[exec_index] = atoi(line);
+            exec_index++;
+        }
+        return 0;
+}
 
 void inst_details(struct instruction* inst) {
     printf("Text   : %s    name  : %s\n", inst->text, inst->name);
